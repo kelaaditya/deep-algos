@@ -55,7 +55,7 @@ def load_data():
     y_train = y_train.astype('int32')
     X_test = np.reshape(X_test, (len(X_test), 1, 28, 28))
     y_test = y_test.astype('int32')
-    return X_train, y_train, X_test, y_test
+    return X_train/np.float32(256), y_train, X_test/np.float32(256), y_test
     
     
     
