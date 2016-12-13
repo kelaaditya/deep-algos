@@ -3,7 +3,7 @@
 """
 Created on Tue Oct 25 11:40:10 2016
 
-Taken from https://github.com/tqchen/ML-SGHMC
+Partly taken from https://github.com/tqchen/ML-SGHMC
 """
 
 import os, struct
@@ -52,7 +52,9 @@ def load_data():
     X_train, y_train = load_mnist('training')
     X_test, y_test = load_mnist('testing')
     X_train = np.reshape(X_train, (len(X_train), 1, 28, 28))
+    y_train = y_train.astype('int32')
     X_test = np.reshape(X_test, (len(X_test), 1, 28, 28))
+    y_test = y_test.astype('int32')
     return X_train, y_train, X_test, y_test
     
     
