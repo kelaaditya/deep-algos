@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 
 X_train, y_train, X_test, y_test = load_data()
 
-def mlp_sgd(X_train, y_train, X_test, y_test, epochs, batch_size):
+def mlp_sgd(X_tr, y_tr, X_t, y_t, epochs, batch_size):
     X = T.tensor4('X')
     y = T.ivector('y')
     
@@ -63,12 +63,12 @@ def mlp_sgd(X_train, y_train, X_test, y_test, epochs, batch_size):
     training_loss_list = []
     test_accuracy_list = []
     for i in range(epochs):
-        for batch in batchify(X_train, y_train, batch_size):
+        for batch in batchify(X_tr, y_tr, batch_size):
             X_batch, y_batch = batch
             training_loss_list.append(train_mlp(X_batch, y_batch))
         
         test_accuracy_list = []
-        for batch in batchify(X_test, y_test, batch_size):
+        for batch in batchify(X_t, y_t, batch_size):
             X_batch, y_batch = batch
             _, test_accuracy = validation_mlp(X_batch, y_batch)
             test_accuracy_list.append(test_accuracy*100)
@@ -76,4 +76,8 @@ def mlp_sgd(X_train, y_train, X_test, y_test, epochs, batch_size):
     return(training_loss_list, test_accuracy_list)
 
 
+if __name__ == "__main__":
+    training_loss, test_accuracy = mlp_sgd(X_train, y_train, X_test, y_test, 2, 500)
+    print(np.array(training_loss))
+    print(np.array(test_accuracy))
 
