@@ -81,6 +81,6 @@ def mlp_nesterov_l2(X_tr, y_tr, X_t, y_t, epochs, batch_size):
 
 if __name__ == "__main__":
     training_loss, test_accuracy = mlp_nesterov_l2(X_train, y_train, X_test, y_test, 2, 500)
-    print(np.array(training_loss))
-    print(np.array(test_accuracy))
+    print(training_loss)
+    print(test_accuracy)
 
