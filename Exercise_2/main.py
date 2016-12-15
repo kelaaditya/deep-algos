@@ -26,14 +26,18 @@ if __name__ == "__main__":
 	'''
 	Training loss plotted as a function of batches fed
 	'''
-	plt.plot(np.arange(len(training_loss_sgd)), training_loss_sgd)
-	plt.plot(np.arange(len(training_loss_nes)), training_loss_nes)
-	plt.plot(np.arange(len(training_loss_l1)), training_loss_l1)
-	plt.plot(np.arange(len(training_loss_l2)), training_loss_l2)
+        plt.title('Training Loss vs Batch')
+	plt.plot(np.arange(len(training_loss_sgd)), training_loss_sgd, label='SGD')
+	plt.plot(np.arange(len(training_loss_nes)), training_loss_nes, label='Nesterov Momentum')
+	plt.plot(np.arange(len(training_loss_l1)), training_loss_l1, label='Nesterov with l1 reg')
+	plt.plot(np.arange(len(training_loss_l2)), training_loss_l2, label='Nesterov with l2 reg')
+        plt.legend()
 	plt.show()
 
-	plt.plot(np.arange(len(test_accuracy_sgd)), test_accuracy_sgd)
-	plt.plot(np.arange(len(test_accuracy_nes)), test_accuracy_nes)
-	plt.plot(np.arange(len(test_accuracy_l1)), test_accuracy_l1)
-	plt.plot(np.arange(len(test_accuracy_l2)), test_accuracy_l2)
+        plt.title('Training Loss vs Batch')
+	plt.plot(np.arange(len(test_accuracy_sgd)), test_accuracy_sgd, label='SGD')
+	plt.plot(np.arange(len(test_accuracy_nes)), test_accuracy_nes, label='Nesterov Momentum')
+	plt.plot(np.arange(len(test_accuracy_l1)), test_accuracy_l1, label='Nesterov with l1 reg')
+	plt.plot(np.arange(len(test_accuracy_l2)), test_accuracy_l2, label='Nesterov with l2 reg')
+        plt.legend()
 	plt.show()
