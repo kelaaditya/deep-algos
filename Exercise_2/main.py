@@ -34,7 +34,7 @@ if __name__ == "__main__":
         plt.legend()
 	plt.show()
 
-        plt.title('Training Loss vs Batch')
+        plt.title('Test Accuracy vs Batch')
 	plt.plot(np.arange(len(test_accuracy_sgd)), test_accuracy_sgd, label='SGD')
 	plt.plot(np.arange(len(test_accuracy_nes)), test_accuracy_nes, label='Nesterov Momentum')
 	plt.plot(np.arange(len(test_accuracy_l1)), test_accuracy_l1, label='Nesterov with l1 reg')
