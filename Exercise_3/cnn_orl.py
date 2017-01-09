@@ -24,6 +24,11 @@ def cnn_orl(X_tr, y_tr, X_t, y_t, epochs, batch_size, learning_rate=0.01):
                                          W=lasagne.init.GlorotUniform()
                                         )
     max_pooling_1 = lasagne.layers.MaxPool2DLayer(cnn_layer_1, pool_size=(2, 2))
+    
+    #Visualization of the first convolutional layer
+    #Will add W and the bias 
+    W_1, b_1 = lasagne.layers.get_all_params(cnn_layer_1, trainable=True)
+    
 
     #Another convolution layer followed by ReLU and Max Pooling
     cnn_layer_2 = lasagne.layers.Conv2DLayer(max_pooling_1, num_filters=30, 
@@ -66,9 +71,9 @@ def cnn_orl(X_tr, y_tr, X_t, y_t, epochs, batch_size, learning_rate=0.01):
     train_cnn = theano.function([X, y], loss, updates=updates)
     validation_cnn = theano.function([X, y], [validation_loss, validation_accuracy])
 
-	#training_loss_list is a collection of the training loss for each batch for each epoch
-	#The 'i'th epoch will have a contribution of len(training_set)/batch_size 
-	# in the training loss list at the 'i'th place
+    #training_loss_list is a collection of the training loss for each batch for each epoch
+    #The 'i'th epoch will have a contribution of len(training_set)/batch_size 
+    # in the training loss list at the 'i'th place
     training_loss_list = []
     test_accuracy_list = []
     for i in range(epochs):
@@ -81,10 +86,10 @@ def cnn_orl(X_tr, y_tr, X_t, y_t, epochs, batch_size, learning_rate=0.01):
             _, test_accuracy = validation_cnn(X_batch, y_batch)
             test_accuracy_list.append(test_accuracy*100)
 
-    return(training_loss_list, test_accuracy_list)
+    return(training_loss_list, test_accuracy_list, W_1, b_1)
 
 
 if __name__ == "__main__":
-    training_loss, test_accuracy = cnn_orl(trainX, trainY, testX, testY, 1, 10, 0.01)
+    training_loss, test_accuracy, _, _ = cnn_orl(trainX, trainY, testX, testY, 1, 10, 0.01)
     print(np.array(training_loss))
     print(test_accuracy)
