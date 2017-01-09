@@ -67,7 +67,6 @@ def mlp_sgd(X_tr, y_tr, X_t, y_t, epochs, batch_size):
             X_batch, y_batch = batch
             training_loss_list.append(train_mlp(X_batch, y_batch))
         
-        test_accuracy_list = []
         for batch in batchify(X_t, y_t, batch_size):
             X_batch, y_batch = batch
             _, test_accuracy = validation_mlp(X_batch, y_batch)
