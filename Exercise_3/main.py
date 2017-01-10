@@ -8,6 +8,8 @@ from load_ORL_faces import *
 from cnn_orl import *
 
 import matplotlib.pyplot as plt
+from matplotlib import gridspec
+
 
 
 if __name__ == "__main__":
@@ -47,10 +49,11 @@ if __name__ == "__main__":
 	#Each filter (30) displayed in the grid
 	first_layer_weights = [weights[0]+bias for weights, bias in zip(W.get_value(), b.get_value())]
 	gs = gridspec.GridSpec(10, 10)
-	for i in range(len(test)):
+	for i in range(len(first_layer_weights)):
 		ax = plt.subplot(gs[i])
 		ax.grid()
 		ax.set_xticks([])
 		ax.set_yticks([])
-		ax.imshow(test[i], cmap='gray')
+		ax.imshow(first_layer_weights[i], cmap='gray')
+	plt.show()
 		
