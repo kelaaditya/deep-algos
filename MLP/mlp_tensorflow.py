@@ -52,7 +52,7 @@ if __name__ == "__main__":
     mnist = input_data.read_data_sets("/tmp/data/", one_hot=True)
     
     training_loss = mlp(batch_size=50, 
-                        epochs=1,
+                        epochs=100,
                         learning_rate=0.01)
 
     plt.plot(np.arange(len(training_loss)), training_loss)
