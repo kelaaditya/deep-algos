@@ -54,4 +54,7 @@ if __name__ == "__main__":
     training_loss = mlp(batch_size=50, 
                         epochs=1,
                         learning_rate=0.01)
+
+    plt.plot(np.arange(len(training_loss)), training_loss)
+    plt.show()
     
