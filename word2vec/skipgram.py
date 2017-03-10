@@ -53,18 +53,15 @@ def word2vec(input_data, classified_data, vocab_size, embedding_size, batch_size
         
     with tf.Session() as sess:
         sess.run(init)
-
         writer = tf.summary.FileWriter('graphs/', sess.graph)
-        
+
         loss_list = []
-        
         for epoch in range(epochs):
             for batch in batchify(input_data, classified_data, batch_size):
                 input_batch, label_batch = batch
                 loss_value, _ = sess.run([loss, optimizer], 
                                          feed_dict={input_words: input_batch, label_words: label_batch})
                 loss_list.append(loss_value)
-        
         writer.close()
 
 
