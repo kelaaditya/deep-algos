@@ -2,6 +2,7 @@ import tensorflow as tf
 import numpy as np
 
 def get_mnist_data():
+    # loads the MNIST dataset
     mnist = tf.contrib.learn.datasets.load_dataset("mnist")
     train_data = mnist.train.images
     train_labels = np.asarray(mnist.train.labels, dtype=np.int32)
@@ -11,6 +12,8 @@ def get_mnist_data():
 
 
 def cnn_model_fn(features, labels, mode):
+    # the input layer reads in from the "features" dictionary
+    # the "features" dictionary is specified in the "train_input_fn" 
     input_layer = tf.reshape(features["x"], [-1, 28, 28, 1])
 
     conv1 = tf.layers.conv2d(inputs=input_layer,
@@ -42,12 +45,15 @@ def cnn_model_fn(features, labels, mode):
     logits = tf.layers.dense(inputs=dropout,
                              units=10)
 
+    # the "predictions" dictionary contains the various prediction ops
+    # Here, we can opt for predicting either the "classes" or the "probabilities"
     predictions = {
         "classes": tf.argmax(input=logits,
                              axis=1),
         "probabilities": tf.nn.softmax(logits, name='softmax')
     }
 
+    # the PREDICT mode has to be before TRAIN and EVAL
     if mode == tf.estimator.ModeKeys.PREDICT:
         spec = tf.estimator.EstimatorSpec(mode=mode, predictions=predictions)
     else:
@@ -70,6 +76,7 @@ if __name__ == "__main__":
 
     mnist_classifier = tf.estimator.Estimator(model_fn=cnn_model_fn, model_dir="../checkpoints/mnist")
 
+    # input function for training
     train_input_fn = tf.estimator.inputs.numpy_input_fn(x={"x": x_train},
                                                         y=y_train,
                                                         num_epochs=1,
@@ -77,6 +84,7 @@ if __name__ == "__main__":
                                                         shuffle=True)
     mnist_classifier.train(input_fn=train_input_fn, steps=20000)
 
+    # input function for evaluation
     eval_input_fn = tf.estimator.inputs.numpy_input_fn(x={"x": x_eval},
                                                        y=y_eval,
                                                        num_epochs=1,
