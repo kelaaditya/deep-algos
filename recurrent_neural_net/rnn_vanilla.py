@@ -9,15 +9,15 @@ length_echo = 5
 batch_size = 1
 state_size = 100
 
-def generate_data(length_train, length_echo, batch_size):
-    assert length_train % batch_size == 0
+def generate_data(length_train, length_echo, batch_size, length_step):
+    assert length_train % (batch_size * length_step) == 0
 
     x_train = np.random.randint(0, 2, size=length_train)
     y_train = np.roll(x_train, length_echo)
     y_train[0 : length_echo] = 0
 
-    x_train = np.reshape(x_train, newshape=(batch_size, -1))
-    y_train = np.reshape(y_train, newshape=(batch_size, -1))
+    x_train = np.reshape(x_train, newshape=(-1, batch_size, length_step))
+    y_train = np.reshape(y_train, newshape=(-1, batch_size, length_step))
 
     return(x_train, y_train)
 
