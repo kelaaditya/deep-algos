@@ -228,6 +228,14 @@ def rnn_estimator(num_classes=2, length_step=25, length_train=100000, length_ech
     return(y_pred, prediction_list)
 
 
+
+
+
+    ################################
+    #      TensorFlow RNN API      #
+    ################################
+
+
 if __name__=="__main__":
     label_list, predicted_label_list = rnn_estimator()
     print("label list: ", label_list)
