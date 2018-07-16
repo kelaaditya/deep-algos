@@ -258,13 +258,40 @@ def multi_rnn(num_classes, length_step=10, length_train=100000, length_echo=5, s
 
     x = tf.placeholder(dtype=tf.int32, shape=[batch_size, num_steps])
     y = tf.placeholder(dtype=tf.int32, shape=[batch_size, num_steps])
-
-    embeddings = tf.get_variable('embedding_matrix', [num_classes, state_size])
-
-
+    
+    # use word embedding instead of one-hot encodding
+    embeddings = tf.Variable(tf.random_uniform([num_classes, state_size], -1.0, 1.0))
+    lookup = tf.nn.embedding_lookup(embeddings, x)
+    input_vector = tf.unstack(lookup, axis=1)
+    
     cell = tf.contrib.rnn.BasicRNNCell(num_units=state_size)
     stacked_rnn_cell = tf.contrib.rnn.MultiRNNCell([cell] * num_layers, state_is_tuple=True)
-    init_state = state = stacked_rnn_cell.zero_state(batch_size, dtype=tf.float32)
+    init_state = stacked_rnn_cell.zero_state(batch_size, dtype=tf.float32)
+    state = init_state
+
+    output_list = []
+    with tf.variable_scope('RNN', reuse=tf.AUTO_REUSE):
+        for input_batch in input_vector:
+            cell_output, state = stacked_rnn_cell(input_batch, state)
+            output_list.append(cell_output)
+    final_state = state
+    output = tf.reshape(tf.concat(output_list, axis=1), [-1, state_size])
+
+    with tf.variable_scope('softmax', reuse=tf.AUTO_REUSE):
+        w = tf.get_variable('w', shape=[state_size, num_classes])
+        b = tf.get_variable('b', shape=[num_classes], dtype=tf.float32)
+        logits = tf.nn.xw_plus_b(output, w, b)
+        logits = tf.reshape(logits, [batch_size, num_steps, num_classes])
+                                                    
+    loss = tf.contrib.seq2seq.sequence_loss(logits, y, weights=tf.ones([batch_size, num_steps]))
+    optimizer = tf.train.AdamOptimizer(learning_rate)
+    train_op = optimizer.minimize(loss)
+
+    init = tf.global_variables_initializer()
+
+
+
+
 
 
 
