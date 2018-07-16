@@ -235,6 +235,29 @@ def rnn_estimator(num_classes=2, length_step=25, length_train=100000, length_ech
     #      TensorFlow RNN API      #
     ################################
 
+def get_shakespeare_data(file_url, file_name):
+    if not os.path.exists(file_name):
+        urllib.request.urlretrieve(file_url, file_name)
+            
+     with open(file_name,'r') as f:
+        raw_data = f.read()
+                        
+    characters = set(raw_data)
+    index_to_character = dict(enumerate(characters))
+    character_to_index = dict(zip(index_to_character.values(), index_to_character.keys()))
+    data = [character_to_index[char] for char in raw_data]
+    return(len(characters), data)
+
+def multi_rnn(num_classes, length_step=10, length_train=100000, length_echo=5, state_size=10, batch_size=10, learning_rate=0.001):
+
+    file_url = 'https://raw.githubusercontent.com/jcjohnson/torch-rnn/master/data/tiny-shakespeare.txt'
+    file_name = 'tinyshakespeare.txt'
+    vocab_size, data = get_shakespeare_data(file_url, file_name)
+
+    x = tf.placeholder(dtype=tf.int32, shape=[batch_size, num_steps])
+    y = tf.placeholder(dtype=tf.int32, shape=[batch_size, num_steps])
+
+    embeddings = tf.get_variable('embedding_matrix', [num_classes, state_size])
 
 if __name__=="__main__":
     label_list, predicted_label_list = rnn_estimator()
