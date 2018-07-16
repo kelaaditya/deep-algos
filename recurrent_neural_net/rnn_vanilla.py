@@ -267,6 +267,7 @@ def multi_rnn(num_classes, length_step=10, length_train=100000, length_echo=5, s
     init_state = state = stacked_rnn_cell.zero_state(batch_size, dtype=tf.float32)
 
 
+
 if __name__=="__main__":
     label_list, predicted_label_list = rnn_estimator()
     print("label list: ", label_list)
