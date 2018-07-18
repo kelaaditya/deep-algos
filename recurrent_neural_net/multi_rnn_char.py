@@ -133,6 +133,7 @@ def generate_characters(graph, num_classes, load_checkpoint, start_letter='T', n
 
         # start generating "num_output_characters" number of characters:
         for i in range(num_output_characters):
+            # current state starts out as None
             if current_state:
                 feed_dict = {graph["x"] : [[current_char]], graph["init_state"] : current_state}
             else:
@@ -166,7 +167,7 @@ if __name__ == "__main__":
 
     multi_rnn_graph = generate_model_graph(state_size=100, num_rnn_layers=3, num_classes=num_classes, batch_size=32, num_steps=200, learning_rate=0.0001)
 
-    loss_list, _ = train_graph(multi_rnn_graph, num_epochs=100, save_location="./checkpoints/shakespeare.ckpt")
+    loss_list, _ = train_graph(multi_rnn_graph, num_epochs=50, save_location="./checkpoints/shakespeare.ckpt")
     #plt.plot(loss_list)
     #plt.show()
 
