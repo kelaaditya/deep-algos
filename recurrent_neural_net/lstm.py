@@ -105,3 +105,60 @@ class LSTM:
             hidden_state = h_t
         
         return(list_of_outputs)
+
+
+    # function to build graph with the initial hidden state as a zero tensor
+    # and the hidden cell state as the zero tensor
+    def build_graph(self):
+
+        tf.reset_default_graph()
+
+        x = tf.placeholder(dtype=tf.int32, shape=[self.batch_size, self.num_steps])
+        y = tf.placeholder(dtype=tf.int32, shape=[self.batch_size, self.num_steps])
+
+        with tf.variable_scope('embedding', reuse=tf.AUTO_REUSE):
+            embeddings = tf.Variable(tf.random_uniform([self.num_classes, self.state_size], -1.0, 1.0))
+            lookup = tf.nn.embedding_lookup(embeddings, x)
+            # the shape of 'list_of_input_vectors' is (self.num_steps, self.batch_size, self.state_size)
+            # it is a list of length = self.num_steps of tensors of shape (self.batch_size, self.state_size)
+            list_of_input_vectors = tf.unstack(lookup, axis=1)
+
+        with tf.variable_scope('init_states', reuse=tf.AUTO_REUSE):
+            init_hidden_state = tf.get_variable('h_0', [self.batch_size, self.state_size], initializer=tf.zeros_initializer())
+            init_cell_state = tf.get_variable('C_0', [self.batch_size, self.state_size], initializer=tf.zeros_initializer())
+
+        list_of_outputs, final_hidden_state, final_cell_state = self._LSTM_output(list_of_input_vectors, init_hidden_state, init_cell_state)
+        output = tf.reshape(tf.concat(list_of_outputs, axis=1), [-1, self.state_size])
+
+        with tf.variable_scope('softmax', reuse=tf.AUTO_REUSE):
+            W = tf.get_variable('w', shape=[self.state_size, self.num_classes], dtype=tf.float32)
+            b = tf.get_variable('b', shape=[self.num_classes], dtype=tf.float32)
+            logits = tf.nn.xw_plus_b(output, W, b)
+            logits = tf.reshape(logits, [self.batch_size, self.num_steps, self.num_classes])
+
+            # softmax predictions for text generation
+            prediction = tf.nn.softmax(logits)
+
+        # sequence_loss takes logits in the shape of [batch_size, sequence_length, num_decoder_symbols]
+        # and targets (here 'y') in the shape of [batch_size, sequence_length]
+        # calculates the weighted cross-entropy loss for a sequence of logits
+        # Alternative: pick from top 'n' most likely characters
+        loss = tf.contrib.seq2seq.sequence_loss(logits, y, weights=tf.ones([self.batch_size, self.num_steps]))
+
+        # train with Adam Optimizer
+        optimizer = tf.train.AdamOptimizer(self.learning_rate)
+
+        train_op = optimizer.minimize(loss)
+
+        graph = {
+            "x": x,
+            "y": y,
+            "init_hidden_state": init_hidden_state,
+            "init_cell_state": init_cell_state,
+            "final_hidden_state": final_hidden_state,
+            "final_cell_state" : final_cell_state,
+            "loss": loss,
+            "prediction": prediction,
+            "train_op": train_op,
+        }
+        return(graph)
