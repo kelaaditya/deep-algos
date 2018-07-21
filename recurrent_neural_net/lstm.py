@@ -187,3 +187,10 @@ class LSTM:
                     loss_list.append(current_loss)
             saver.save(sess, save_location)
         return(loss_list)
+
+
+if __name__=="__main__":
+    num_classes, index_to_character, character_to_index, x_train, y_train = generate_char_data(file_url, file_name, batch_size=32, num_steps=200)
+    char_lstm = LSTM(state_size=100, num_classes=num_classes, batch_size=32, num_steps=200)
+    char_lstm_graph = char_lstm.build_graph()
+    loss_list = char_lstm.train_graph(graph=char_lstm_graph, num_epochs=1, save_location='./checkpoints/lstm_shakespeare', x_train=x_train, y_train=y_train)
