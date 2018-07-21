@@ -35,6 +35,10 @@ def generate_char_data(file_url, file_name, batch_size, num_steps):
 
     return(num_classes, index_to_character, character_to_index, x_train, y_train)
 
+
+
+
+
 class LSTM:
     
     def __init__(self, state_size, num_classes, batch_size, num_steps, learning_rate=0.001):
@@ -162,3 +166,24 @@ class LSTM:
             "train_op": train_op,
         }
         return(graph)
+
+
+
+
+    def train_graph(self, graph, num_epochs, save_location, x_train, y_train):
+
+        saver = tf.train.Saver()
+
+        init = tf.global_variables_initializer()
+
+        with tf.Session() as sess:
+            loss_list = []
+
+            sess.run(init)
+            for epoch in range(num_epochs):
+                for x_data, y_data in zip(x_train, y_train):
+                    feed_dict = {graph["x"]: x_data, graph["y"]: y_data}
+                    current_loss, _ = sess.run([graph["loss"], graph["train_op"]], feed_dict=feed_dict)
+                    loss_list.append(current_loss)
+            saver.save(sess, save_location)
+        return(loss_list)
