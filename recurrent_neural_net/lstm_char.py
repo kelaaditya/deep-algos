@@ -105,10 +105,13 @@ class LSTM:
             
             list_of_outputs.append(o_t)
             
-            cell_state = C_t
             hidden_state = h_t
+            cell_state = C_t
+
+        final_hidden_state = hidden_state
+        final_cell_state = cell_state
         
-        return(list_of_outputs)
+        return(list_of_outputs, final_hidden_state, final_cell_state)
 
 
     # function to build graph with the initial hidden state as a zero tensor
