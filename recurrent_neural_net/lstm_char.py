@@ -190,6 +190,9 @@ class LSTM:
 
 
 if __name__=="__main__":
+    file_url = 'https://raw.githubusercontent.com/jcjohnson/torch-rnn/master/data/tiny-shakespeare.txt'
+    file_name = 'tinyshakespeare.txt'
+
     num_classes, index_to_character, character_to_index, x_train, y_train = generate_char_data(file_url, file_name, batch_size=32, num_steps=200)
     char_lstm = LSTM(state_size=100, num_classes=num_classes, batch_size=32, num_steps=200)
     char_lstm_graph = char_lstm.build_graph()
