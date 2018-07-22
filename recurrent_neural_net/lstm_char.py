@@ -237,10 +237,14 @@ if __name__=="__main__":
     file_url = 'https://raw.githubusercontent.com/jcjohnson/torch-rnn/master/data/tiny-shakespeare.txt'
     file_name = 'tinyshakespeare.txt'
 
-    num_classes, index_to_character, character_to_index, x_train, y_train = generate_char_data(file_url, file_name, batch_size=32, num_steps=200)
-    char_lstm = LSTM(state_size=100, num_classes=num_classes, batch_size=32, num_steps=200)
+    num_classes, index_to_character, character_to_index, x_train, y_train = generate_char_data(file_url, file_name, batch_size=32, num_steps=50)
+    char_lstm = LSTM(state_size=20, num_classes=num_classes, batch_size=32, num_steps=50)
     char_lstm_graph = char_lstm.build_graph()
     loss_list = char_lstm.train_graph(graph=char_lstm_graph, num_epochs=1, save_location='./checkpoints/lstm_shakespeare', x_train=x_train, y_train=y_train)
 
-    plt.plot(loss_list)
-    plt.show()
+    #plt.plot(loss_list)
+    #plt.show()
+
+    generate_char_LSTM = LSTM(state_size=20, num_classes=num_classes, batch_size=1, num_steps=1)
+    generate_char_LSTM_graph = generate_char_LSTM.build_graph()
+    generate_characters(graph=generate_char_LSTM_graph, num_classes=num_classes, load_checkpoint='./checkpoints/lstm_shakespeare')
