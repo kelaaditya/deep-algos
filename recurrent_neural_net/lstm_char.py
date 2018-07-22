@@ -39,6 +39,43 @@ def generate_char_data(file_url, file_name, batch_size, num_steps):
 
 
 
+def generate_characters(graph, num_classes, load_checkpoint, start_letter="T", num_output_characters=200):
+    saver = tf.train.Saver()
+            
+    current_char = character_to_index[start_letter]
+    current_hidden_state = None
+    #current_cell_state = None
+    char_list = [current_char]
+       
+    with tf.Session() as sess:
+        saver.restore(sess, load_checkpoint)
+       
+        # start generating "num_output_characters" number of characters:
+        for i in range(num_output_characters):
+            if current_hidden_state is not None:
+                feed_dict = {graph['x'] : [[current_char]], graph['init_hidden_state'] : current_hidden_state, graph['init_cell_state'] : current_cell_state}
+            else:
+                feed_dict = {graph['x'] : [[current_char]]}
+                                
+            prediction, current_hidden_state, current_cell_state = sess.run([graph['prediction'], graph['final_hidden_state'], graph['final_cell_state']], feed_dict)
+                                                                                                                        
+            # We get the probability distribution of the predicted character via the
+            # softmax calculation over logits. We use this probability distribution to 
+            # select the next character by sampling over the distribution
+            current_char = np.random.choice(num_classes, 1, p=np.squeeze(prediction))[0]
+                                                                                                                                                                                    
+            char_list.append(current_char)
+                                                                                                                                                                                                        
+    characters = map(lambda x: index_to_character[x], char_list)
+    string_characters = "".join(characters)
+    print(string_characters)
+    
+    return(string_characters)
+
+
+
+
+
 class LSTM:
     
     def __init__(self, state_size, num_classes, batch_size, num_steps, learning_rate=0.001):
@@ -130,9 +167,9 @@ class LSTM:
             # it is a list of length = self.num_steps of tensors of shape (self.batch_size, self.state_size)
             list_of_input_vectors = tf.unstack(lookup, axis=1)
 
-        with tf.variable_scope('init_states', reuse=tf.AUTO_REUSE):
-            init_hidden_state = tf.get_variable('h_0', [self.batch_size, self.state_size], initializer=tf.zeros_initializer())
-            init_cell_state = tf.get_variable('C_0', [self.batch_size, self.state_size], initializer=tf.zeros_initializer())
+        
+        init_hidden_state = tf.zeros(shape=[self.batch_size, self.state_size], dtype=tf.float32, name='h_0')
+        init_cell_state = tf.zeros(shape=[self.batch_size, self.state_size], dtype=tf.float32, name='c_0')
 
         list_of_outputs, final_hidden_state, final_cell_state = self._LSTM_output(list_of_input_vectors, init_hidden_state, init_cell_state)
         output = tf.reshape(tf.concat(list_of_outputs, axis=1), [-1, self.state_size])
@@ -173,6 +210,7 @@ class LSTM:
 
 
 
+
     def train_graph(self, graph, num_epochs, save_location, x_train, y_train):
 
         saver = tf.train.Saver()
@@ -192,6 +230,9 @@ class LSTM:
         return(loss_list)
 
 
+
+
+
 if __name__=="__main__":
     file_url = 'https://raw.githubusercontent.com/jcjohnson/torch-rnn/master/data/tiny-shakespeare.txt'
     file_name = 'tinyshakespeare.txt'
@@ -200,3 +241,6 @@ if __name__=="__main__":
     char_lstm = LSTM(state_size=100, num_classes=num_classes, batch_size=32, num_steps=200)
     char_lstm_graph = char_lstm.build_graph()
     loss_list = char_lstm.train_graph(graph=char_lstm_graph, num_epochs=1, save_location='./checkpoints/lstm_shakespeare', x_train=x_train, y_train=y_train)
+
+    plt.plot(loss_list)
+    plt.show()
