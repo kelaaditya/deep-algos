@@ -14,19 +14,18 @@ def word2vec(input_data, classified_data, vocab_size, embedding_size, batch_size
         num_sampled (int): number of negative examples sampled
     '''
     
-    #Using namescopes for better graph visualization
     with tf.name_scope('data'):
-        #Not using the one-hot representation
-        #Index of the word fed in directly rather than the one-hot representation
+        # Not using the one-hot representation
+        # Index of the word fed in directly rather than the one-hot representation
         input_words = tf.placeholder(tf.int32, shape=[batch_size], name='input_words')
         label_words = tf.placeholder(tf.int32, shape=[batch_size, 1], name='label_words')
     
     with tf.name_scope('embedding'):
-        #Randomly initialized embedding matrix
+        # Randomly initialized embedding matrix
         embedding_matrix = tf.Variable(tf.random_uniform([vocab_size, embedding_size], -1.0, 1.0), 
                                    name='embedding_matrix')
         
-        #lookup for the embedding matrix
+        # lookup for the embedding matrix
         embedding = tf.nn.embedding_lookup(embedding_matrix, input_words, name='embedding')
     
     with tf.name_scope('hidden_layer'):
@@ -37,7 +36,7 @@ def word2vec(input_data, classified_data, vocab_size, embedding_size, batch_size
                                         name = 'hidden_layer_bias')
         
     with tf.name_scope('loss'):
-        #Use the NCE loss function
+        # Use the NCE loss function
         loss = tf.reduce_mean(tf.nn.nce_loss(weights=hidden_layer_weights,
                                              biases=hidden_layer_bais,
                                              labels=label_words,
@@ -46,8 +45,8 @@ def word2vec(input_data, classified_data, vocab_size, embedding_size, batch_size
                                              num_classes=vocab_size),
                               name='loss')
         
-        #Gradient Descent Optimizer with learning rate=1.0
-        optimizer = tf.train.GradientDescentOptimizer(learning_rate=1.0).minimize(loss)
+        # Gradient Descent Optimizer with learning rate=1.0
+        optimizer = tf.train.GradientDescentOptimizer(learning_rate=0.01).minimize(loss)
         
         init = tf.global_variables_initializer()
         
