@@ -51,6 +51,11 @@ def get_data(positive_examples, negative_examples, batch_size):
         for j in range(len(word_row)):
             x_index[i][j] = word_to_index[word_row[j]]
 
+    ##### alternative to the above code:  #####
+    # max_document_length = max([len(x.split(" ")) for x in x_data])
+    # vocab_processor = learn.preprocessing.VocabularyProcessor(max_document_length)
+    # x = np.array(list(vocab_processor.fit_transform(x_data)))
+
     # permute the x_index rows and the y_data rows according to the 
     # list of permutations defined by np.random.permutation
     permutations = np.random.permutation(data_size)
