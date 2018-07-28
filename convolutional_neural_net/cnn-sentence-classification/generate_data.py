@@ -37,6 +37,10 @@ def get_data(positive_examples, negative_examples, batch_size):
     max_sentence_length = max([len(x.split(" ")) for x in x_data])
     
     words = set([item for x in x_data for item in x.split(" ")])
+    
+    # get vocab size: the total number of unique words from every sentence
+    vocab_size = len(words)
+    
     index_to_word = dict(enumerate(words))
     word_to_index = dict(zip(index_to_word.values(), index_to_word.keys()))
 
@@ -51,11 +55,6 @@ def get_data(positive_examples, negative_examples, batch_size):
         for j in range(len(word_row)):
             x_index[i][j] = word_to_index[word_row[j]]
 
-    ##### alternative to the above code:  #####
-    # max_document_length = max([len(x.split(" ")) for x in x_data])
-    # vocab_processor = learn.preprocessing.VocabularyProcessor(max_document_length)
-    # x = np.array(list(vocab_processor.fit_transform(x_data)))
-
     # permute the x_index rows and the y_data rows according to the 
     # list of permutations defined by np.random.permutation
     permutations = np.random.permutation(data_size)
@@ -69,7 +68,7 @@ def get_data(positive_examples, negative_examples, batch_size):
     x_index = np.reshape(x_index, newshape=(num_batches, batch_size, max_sentence_length))
     y_data = np.reshape(y_data, newshape=(num_batches, batch_size, 2))
 
-    return(x_index, y_data)
+    return(vocab_size, max_sentence_length, x_index, y_data)
 
 
 def generate_epochs(x_data, y_data, num_epochs):
