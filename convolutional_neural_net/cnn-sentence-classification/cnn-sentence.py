@@ -68,8 +68,10 @@ class CNN:
             
             
         graph = {
+            "x": x,
+            "y": y,
             "embeddings": embeddings, 
-            "prediction_dict": predictions
+            "prediction_dict": predictions,
             "loss": loss,
         }
         return(graph)
