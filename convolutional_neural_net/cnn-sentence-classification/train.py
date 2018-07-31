@@ -3,6 +3,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import re
 
+from cnn_sentence import CNN
+import generate_data
+
 def train(positive_examples, 
           negative_examples,
           batch_size,
@@ -15,7 +18,7 @@ def train(positive_examples,
         
     tf.reset_default_graph()
             
-    vocab_size, max_sentence_length, x_data, y_data = get_data(positive_examples, negative_examples, batch_size)
+    vocab_size, max_sentence_length, x_data, y_data = generate_data.get_data(positive_examples, negative_examples, batch_size)
                     
     cnn_sentence = CNN(max_sentence_length, vocab_size, 2, embedding_size, num_filters, filter_sizes)
     cnn_sentence_graph = cnn_sentence.build_graph(mode="training")
@@ -30,7 +33,7 @@ def train(positive_examples,
     loss_list = []
     with tf.Session() as sess:
         sess.run(init)
-        for x_batch, y_batch in generate_epochs(x_data, y_data, num_epochs):
+        for x_batch, y_batch in generate_data.generate_epochs(x_data, y_data, num_epochs):
             feed_dict = {cnn_sentence_graph["x"]: x_batch, cnn_sentence_graph["y"]: y_batch}
             loss = sess.run(cnn_sentence_graph["loss"], feed_dict)
             loss_list.append(loss)
@@ -40,6 +43,10 @@ def train(positive_examples,
 
 
 if __name__ == "__main__":
+
+    positive_examples = "./data/rt-polarity.pos"
+    negative_examples = "./data/rt-polarity.neg"
+
     batch_size = 32
     num_epochs = 10
     embedding_size = 100
