@@ -60,4 +60,82 @@ class Controller:
         size_erase_vector = self.size_memory_vector
         size_add_vector = self.size_memory_vector
         self.size_interface_vector = size_read_interface + size_write_interface + size_erase_vector + size_add_vector
+
+
+    def parse_interface_vector(self, interface_vector):
+        """Parse interface vector into components
+        
+        Parameters:
+        -----------
+        interface_vector: tf.Tensor (batch_size, size_interface_vector)
+        
+        returns: dict
+            a dictionary with the parsed components
+        --------
+        """
+        
+        read_key_vector = self.size_memory_vector * self.num_read_heads
+        read_key_strength = read_key_vector + 1 * self.num_read_heads
+        read_interpolation_gate = read_key_strength + 1 * self.num_read_heads
+        read_gamma = read_interpolation_gate + 1 * self.num_read_heads
+        read_conv_shift_vector = read_gamma + (2 * self.size_conv_shift + 1) * self.num_read_heads
+        
+        write_key_vector = read_conv_shift_vector + self.size_memory_vector * self.num_write_heads
+        write_key_strength = write_key_vector + 1 * self.num_write_heads
+        write_interpolation_gate = write_key_strength + 1 * self.num_write_heads
+        write_gamma = write_interpolation_gate + 1 * self.num_write_heads
+        write_conv_shift_vector = write_gamma + (2 * self.size_conv_shift + 1) * self.num_write_heads
+        
+        erase_vector = write_conv_shift_vector + self.size_memory_vector
+        add_vector = erase_vector + self.size_memory_vector
+        
+        shape_read_key_vector = (self.batch_size, self.size_memory_vector, self.num_read_heads)
+        shape_read_key_strength = (self.batch_size, self.num_read_heads)
+        shape_read_interpolation_gate = (self.batch_size, self.num_read_heads)
+        shape_read_gamma = (self.batch_size, self.num_read_heads)
+        shape_read_conv_shift_vector = (self.batch_size, 2 * self.size_conv_shift + 1, self.num_read_heads)
+        
+        shape_write_key_vector = (self.batch_size, self.size_memory_vector, self.num_write_heads)
+        shape_write_key_strength = (self.batch_size, self.num_write_heads)
+        shape_write_interpolation_gate = (self.batch_size, self.num_write_heads)
+        shape_write_gamma = (self.batch_size, self.num_write_heads)
+        shape_write_conv_shift_vector = (self.batch_size, 2 * self.size_conv_shift + 1, self.num_write_heads)
+        
+        shape_erase_vector = (self.batch_size, self.size_memory_vector)
+        shape_add_vector = (self.batch_size, self.size_memory_vector)
+        
+        # the parsing begins... 
+        parsed = {}
+        
+        parsed['read_keys'] = tf.reshape(interface_vector[:, :read_key_vector], shape_read_key_vector)
+        
+        # the key_strength should be >= 0
+        # hence, we apply softplus
+        parsed['read_strengths'] = tf.nn.softplus(tf.reshape(interface_vector[:, read_key_vector:read_key_strength], shape_read_key_strength))
+        
+        # the interpolation_gate lies between [0, 1]
+        # hence, we apply sigmoid
+        parsed['read_gates'] = tf.nn.sigmoid(tf.reshape(interface_vector[:, read_key_strength:read_interpolation_gate], shape_read_interpolation_gate))
+        
+        # gamma_t >= 1 always
+        # hence, we apply (softplus + 1)
+        parsed['read_gammas'] = 1 + tf.nn.softplus(tf.reshape(interface_vector[:, read_interpolation_gate:read_gamma], shape_read_gamma))
+        
+        # conv_shift vector is a vector of probabilities
+        # hence, we apply softmax
+        parsed['read_shifts'] = tf.nn.softmax(tf.reshape(interface_vector[:, read_gamma:read_conv_shift_vector], shape_read_conv_shift_vector))
+        
+        # similar shapes and wrapping for the write head 
+        parsed['write_keys'] = tf.reshape(interface_vector[:, read_conv_shift_vector:write_key_vector], shape_write_key_vector)
+        parsed['write_strengths'] = tf.nn.softplus(tf.reshape(interface_vector[:, write_key_vector:write_key_strength], shape_read_key_strength))
+        parsed['write_gates'] = tf.nn.sigmoid(tf.reshape(interface_vector[:, write_key_strength:write_interpolation_gate], shape_write_interpolation_gate))
+        parsed['write_gammas'] = 1 + tf.nn.softplus(tf.reshape(interface_vector[:, write_interpolation_gate: write_gamma], shape_write_gamma))
+        parsed['write_shifts'] = tf.nn.softmax(tf.reshape(interface_vector[:, write_gamma:write_conv_shift_vector], shape_write_conv_shift_vector))
+        
+        # each element of erase_vector lies between [0, 1]
+        # hence, we apply sigmoid
+        parsed['erase_vector'] = tf.nn.sigmoid(tf.reshape(interface_vector[:, write_conv_shift_vector:erase_vector], shape_erase_vector))
+        parsed['add_vector'] = tf.reshape(interface_vector[:, erase_vector:add_vector], shape_add_vector)
+        
+        return parsed
         
