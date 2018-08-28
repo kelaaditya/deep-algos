@@ -28,3 +28,35 @@ class Controller:
         self.num_write_heads = num_write_heads
         
         self.batch_size = batch_size
+        
+        # size of input vector of shape (batch_size, size_input)
+        # concatenated with vectors read by controller
+        # each memory vector read by controller is of 
+        # shape (batch_size, size_memory_vector)
+        self.concatenated_input_size = self.size_memory_vector * self.num_read_heads + self.size_input
+        
+        """
+        read_interface_size = size_of_key_vector + 
+                              size_of_key_strength (beta_t) +
+                              size_of_interpolation_gate (g_t) + 
+                              size_of_gamma (gamma_t) + 
+                              size_of_conv_shift_vector
+        Here:                      
+        size_of_conv_shift_vector=5 if size_conv_shift=2,
+        i.e., if size_conv_shift=2, 
+        then conv_shift_vector = [p_shift(-2), p_shift(-1), p_shift(0), p_shift(1), p_shift(2)]
+        and size_conv_shift_vector=2*2+1=5
+        """
+        read_interface_size = self.size_memory_vector * self.num_read_heads + \
+                              1 * self.num_read_heads + \
+                              1 * self.num_read_heads + \
+                              1 * self.num_read_heads + \
+                              (2 * self.size_conv_shift + 1)
+        write_interface_size = self.size_memory_vector * self.num_write_heads + \
+                               1 * self.num_write_heads + \
+                               1 * self.num_write_heads + \
+                               1 * self.num_write_heads + \
+                               (2 * self.size_conv_shift + 1)
+        erase_vector_size = self.size_memory_vector
+        add_vector_size = self.size_memory_vector
+        
