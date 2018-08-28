@@ -51,12 +51,12 @@ class Controller:
                               1 * self.num_read_heads + \
                               1 * self.num_read_heads + \
                               1 * self.num_read_heads + \
-                              (2 * self.size_conv_shift + 1)
+                              (2 * self.size_conv_shift + 1) * self.num_read_heads
         size_write_interface = self.size_memory_vector * self.num_write_heads + \
                                1 * self.num_write_heads + \
                                1 * self.num_write_heads + \
                                1 * self.num_write_heads + \
-                               (2 * self.size_conv_shift + 1)
+                               (2 * self.size_conv_shift + 1) * self.num_write_heads
         size_erase_vector = self.size_memory_vector
         size_add_vector = self.size_memory_vector
         self.size_interface_vector = size_read_interface + size_write_interface + size_erase_vector + size_add_vector
