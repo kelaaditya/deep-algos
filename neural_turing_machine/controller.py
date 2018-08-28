@@ -33,7 +33,7 @@ class Controller:
         # concatenated with vectors read by controller
         # each memory vector read by controller is of 
         # shape (batch_size, size_memory_vector)
-        self.concatenated_input_size = self.size_memory_vector * self.num_read_heads + self.size_input
+        self.size_concatenated_input = self.size_memory_vector * self.num_read_heads + self.size_input
         
         """
         read_interface_size = size_of_key_vector + 
@@ -47,16 +47,17 @@ class Controller:
         then conv_shift_vector = [p_shift(-2), p_shift(-1), p_shift(0), p_shift(1), p_shift(2)]
         and size_conv_shift_vector=2*2+1=5
         """
-        read_interface_size = self.size_memory_vector * self.num_read_heads + \
+        size_read_interface = self.size_memory_vector * self.num_read_heads + \
                               1 * self.num_read_heads + \
                               1 * self.num_read_heads + \
                               1 * self.num_read_heads + \
                               (2 * self.size_conv_shift + 1)
-        write_interface_size = self.size_memory_vector * self.num_write_heads + \
+        size_write_interface = self.size_memory_vector * self.num_write_heads + \
                                1 * self.num_write_heads + \
                                1 * self.num_write_heads + \
                                1 * self.num_write_heads + \
                                (2 * self.size_conv_shift + 1)
-        erase_vector_size = self.size_memory_vector
-        add_vector_size = self.size_memory_vector
+        size_erase_vector = self.size_memory_vector
+        size_add_vector = self.size_memory_vector
+        self.size_interface_vector = size_read_interface + size_write_interface + size_erase_vector + size_add_vector
         
