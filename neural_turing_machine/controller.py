@@ -3,6 +3,7 @@ import tensorflow as tf
 
 
 class Controller:
+    __metaclass__ = abc.ABCMeta
     
     def __init__(self,
                  size_input,
@@ -60,8 +61,8 @@ class Controller:
         size_erase_vector = self.size_memory_vector
         size_add_vector = self.size_memory_vector
         self.size_interface_vector = size_read_interface + size_write_interface + size_erase_vector + size_add_vector
-
-
+        
+    
     def parse_interface_vector(self, interface_vector):
         """Parse interface vector into components
         
@@ -138,4 +139,30 @@ class Controller:
         parsed['add_vector'] = tf.reshape(interface_vector[:, erase_vector:add_vector], shape_add_vector)
         
         return parsed
+    
         
+    @abc.abstractmethod
+    def weights_initial(self):
+        """Defines the initial weights for the controller
+        """
+    
+    
+    @abc.abstractmethod
+    def network_variables(self):
+        """Defines the variables of the neural network model
+        inside the controller
+        """
+        
+    
+    @abc.abstractmethod
+    def network_operation(self, concatenated_input):
+        """Defines the internal operation of the neural 
+        network model inside the controller
+        """
+        
+    
+    @abc.abstractmethod
+    def network_output(self):
+        """Pushes through the input_data to get out the
+        parsed interface vector and the pre_output
+        """
