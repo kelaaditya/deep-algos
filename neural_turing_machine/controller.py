@@ -1,10 +1,9 @@
+import abc
 import numpy as np
 import tensorflow as tf
 
 
-class Controller:
-    __metaclass__ = abc.ABCMeta
-    
+class Controller(abc.ABC):    
     def __init__(self,
                  size_input,
                  size_output,
