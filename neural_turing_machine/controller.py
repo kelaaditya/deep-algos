@@ -61,6 +61,16 @@ class Controller(abc.ABC):
         size_add_vector = self.size_memory_vector
         self.size_interface_vector = size_read_interface + size_write_interface + size_erase_vector + size_add_vector
         
+        
+        ###############################
+        #       get variables for     #
+        #         network and         #
+        #         network_output      #
+        ###############################
+        
+        self.variables_for_network()
+        self.variables_for_network_output()
+        
     
     def parse_interface_vector(self, interface_vector):
         """Parse interface vector into components
@@ -140,16 +150,17 @@ class Controller(abc.ABC):
         return parsed
     
         
+        
     @abc.abstractmethod
-    def weights_initial(self):
-        """Defines the initial weights for the controller
-        """
-    
-    
-    @abc.abstractmethod
-    def network_variables(self):
+    def variables_for_network(self):
         """Defines the variables of the neural network model
         inside the controller
+        """
+        
+    
+    @abc.abstractmethod
+    def variables_for_network_output(self):
+        """Defines the initial weights for the controller
         """
         
     
