@@ -6,28 +6,6 @@ from controller import Controller
 
 class FeedForwardController(Controller):
     
-    """
-    def __init__(self,
-                 size_input,
-                 size_output,
-                 size_memory_vector,
-                 size_conv_shift,
-                 num_read_heads,
-                 num_write_heads=1,
-                 batch_size=1
-                ):
-        super().__init__(size_input,
-                         size_output,
-                         size_memory_vector,
-                         size_conv_shift,
-                         num_read_heads,
-                         num_write_heads=1,
-                         batch_size=1)
-        
-        self.variables_for_network()
-        self.variables_for_network_output()
-    """
-    
     def variables_for_network(self):
         """Defines the variables of the neural network model
         inside the controller
