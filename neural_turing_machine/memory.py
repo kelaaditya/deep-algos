@@ -88,3 +88,41 @@ class Memory:
                            (1 - read_and_write_interpolation_gates) * read_and_write_prev_weights
         
         return gated_weightings
+        
+        
+    def convolutional_shift(self, gated_weightings, shift_weightings):
+        """focussing by location by applying convolutional shift
+        
+        Parameters:
+        -----------
+        gated_weightings: tf.Tensor
+            shape: (batch_size, num_memory_vectors, num_read_and_write_heads)
+        shift_weightings: tf.Tensor
+            shape: (batch_size, 2 * size_conv_shift + 1, num_read_and_write_heads)
+        """
+        
+        concatenated_gated_weightings = tf.concat([gated_weightings, gated_weightings, gated_weightings], axis=1)
+        
+        #
+        single_channel_weightings = tf.expand_dims(tf.expand_dims(concatenated_gated_weightings, axis=1), axis=-1)
+        
+        # unstacked for getting batch_size number of weightings, 
+        # each of size: (batch_size=1, 2 * size_conv_shift + 1, num_read_and_write_heads, channels=1)
+        unstacked_weightings = tf.unstack(single_channel_weightings, axis=0)
+        
+        single_channel_kernels = tf.expand_dims(tf.expand_dims(shift_weightings, axis=-1), axis=-1)
+        unstacked_kernels = tf.unstack(single_channel_kernels, axis=0)
+        
+        conv_shift_array = []
+        for i in range(self.batch_size):
+            conv = tf.nn.conv2d(input=unstacked_weightings[i],
+                                filter=unstacked_kernels[i],
+                                strides=[1, 1, 1, 1],
+                                padding="SAME"
+                               )
+            conv = tf.squeeze(conv, axis=[0, -1])
+            conv = conv[self.num_memory_vectors: 2 * self.num_memory_vectors]
+            conv_shift_array.append(conv)
+            
+        conv_weights = tf.stack(conv_shift_array, axis=0)
+        return conv_weights
