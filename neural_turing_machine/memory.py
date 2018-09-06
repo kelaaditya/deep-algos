@@ -63,9 +63,10 @@ class Memory:
         
     
     def interpolation(self,
-                      read_and_write_interpolation_gates,
                       read_and_write_prev_weights,
-                      content_addressing_weights):
+                      content_addressing_weights,
+                      read_and_write_interpolation_gates,
+                     ):
         """interpolates content_addressing with previous weightings
         using the interpolation gates
         
@@ -73,12 +74,12 @@ class Memory:
         
         Parameters:
         -----------
-        read_and_write_interpolation_gates: tf.Tensor
-            shape: (batch_size, num_read_and_write_heads)
         read_and_write_prev_weights: tf.Tensor
             shape: (batch_size, num_memory_vectors, num_read_and_write_heads)
         content_addressing_weights: tf.Tensor
             shape: (batch_size, num_memory_vectors, num_read_and_write_heads)
+        read_and_write_interpolation_gates: tf.Tensor
+            shape: (batch_size, num_read_and_write_heads)
         """
         
         read_and_write_interpolation_gates = tf.expand_dims(read_and_write_interpolation_gates, 1)
@@ -116,5 +117,30 @@ class Memory:
         
         sharp_conv_weights = pow_conv_weights / tf.expand_dims(tf.reduce_sum(pow_conv_weights, 1), 1)
         
-        #return sharp_conv_weights
         return sharp_conv_weights
+        
+    
+    def update_memory(self, memory, write_weightings, add_vector, erase_vector):
+        """Updates memory according to
+        M'_t(i) = M_{t-1}(i)[1 - w_t(i)e_t] and 
+        M_t(i) = M'_t(i) + w_t(i)a_t
+        
+        Parameters:
+        -----------
+        memory_matrix: tf.Tensor
+            shape: (batch_size, num_memory_vectors, size_memory_vector)
+        write_weightings: tf.Tensor
+            shape: (batch_size, num_memory_vectors, num_write_heads)
+        add_vector: tf.Tensor
+            shape: (batch_size, size_memory_vector)
+        erase_vector: tf.Tensor
+            shape: (batch_size, size_memory_vector)
+        """
+        # elementwise multiplication
+        expand_add_vector = tf.expand_dims(add_vector, 1)
+        expand_erase_vector = tf.expand_dims(erase_vector, 1)
+        
+        memory = memory * (1 - tf.matmul(write_weightings, erase_vector)) + \
+                        tf.matmul(write_weightings, add_vector)
+        
+        return memory
