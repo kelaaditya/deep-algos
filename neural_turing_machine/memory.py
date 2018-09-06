@@ -162,3 +162,47 @@ class Memory:
         transpose_read_vectors = tf.transpose(read_vectors, perm=[0, 2, 1])
         
         return transpose_read_vectors
+        
+    
+    def read_operation(self,
+                       memory,
+                       read_weightings,
+                       read_keys,
+                       read_strengths,
+                       read_gates,
+                       read_shift_weightings,
+                       read_gammas):
+        """Performs a read-from_memory operation
+        
+        Parameters:
+        -----------
+        memory: tf.Tensor
+            shape: (batch_size, num_memory_vectors, size_memory_vector)
+        read_weightings: tf.Tensor
+            shape: (batch_size, num_memory_vectors, num_read_heads)
+        read_keys: tf.Tensor
+            shape: (batch_size, size_memory_vector, num_read_heads)
+        read_strengths: tf.Tensor
+            shape: (batch_size, num_read_heads)
+        read_gates: tf.Tensor
+            shape: (batch_size, num_read_heads)
+        read_shift_weightings: tf.Tensor
+            shape: (batch_size, 2 * size_conv_shift + 1, num_read_heads)
+        read_gammas: tf.Tensor
+            shape: (batch_size, num_read_heads)
+            
+        Returns:
+        --------
+        (updated_read_weightings, updated_read_vectors)
+        
+        updated_read_weightings:
+            shape: (batch_size, num_memory_vectors, num_read_heads)
+        updated_read_vectors: 
+            shape: (batch_size, size_memory_vectors, num_read_heads)
+        """
+        content_addressed_weightings = self.content_addressing(memory, read_keys, read_strengths)
+        gated_weightings = self.interpolation(read_weightings, content_addressed_weightings, read_gates)
+        updated_read_weightings = self.convolutional_shift(gated_weightings, read_shift_weightings, read_gammas)
+        updated_read_vectors = self.update_read_vectors(memory, updated_read_weightings)
+
+        return updated_read_weightings, updated_read_vectors
