@@ -48,6 +48,7 @@ class Memory:
         tf.Tensor
             shape: (batch_size, num_memory_vectors, num_read_and_write_heads)
         """
+        
         normalized_memory = tf.nn.l2_normalize(memory, axis=2)
         
         normalized_read_and_write_key_vectors = tf.nn.l2_normalize(read_and_write_key_vectors, axis=1)
@@ -136,10 +137,11 @@ class Memory:
         erase_vector: tf.Tensor
             shape: (batch_size, size_memory_vector)
         """
+        
         # elementwise multiplication
         expand_add_vector = tf.expand_dims(add_vector, 1)
         expand_erase_vector = tf.expand_dims(erase_vector, 1)
-        
+
         memory = memory * (1 - tf.matmul(write_weightings, expand_erase_vector)) + \
                         tf.matmul(write_weightings, expand_add_vector)
         
@@ -157,6 +159,7 @@ class Memory:
         read_weightings: tf.Tensor
             shape: (batch_size, num_memory_vectors, num_read_reads)
         """
+        
         transpose_read_weigthings = tf.transpose(read_weightings, perm=[0, 2, 1])
         read_vectors = tf.matmul(transpose_read_weigthings, memory)
         transpose_read_vectors = tf.transpose(read_vectors, perm=[0, 2, 1])
@@ -200,9 +203,61 @@ class Memory:
         updated_read_vectors: 
             shape: (batch_size, size_memory_vectors, num_read_heads)
         """
+        
         content_addressed_weightings = self.content_addressing(memory, read_keys, read_strengths)
         gated_weightings = self.interpolation(read_weightings, content_addressed_weightings, read_gates)
         updated_read_weightings = self.convolutional_shift(gated_weightings, read_shift_weightings, read_gammas)
         updated_read_vectors = self.update_read_vectors(memory, updated_read_weightings)
-
+        
         return updated_read_weightings, updated_read_vectors
+    
+    
+    def write_operation(self,
+                        memory,
+                        write_weightings,
+                        write_keys,
+                        write_strengths,
+                        write_gates,
+                        write_shift_weightings,
+                        write_gammas,
+                        add_vector,
+                        erase_vector):
+        """Performs a write-to-memory operation
+        
+        Parameters:
+        -----------
+        memory: tf.Tensor
+            shape: (batch_size, num_memory_vectors, size_memory_vector)
+        write_weightings: tf.Tensor
+            shape: (batch_size, num_memory_vectors, num_write_heads)
+        write_keys: tf.Tensor
+            shape: (batch_size, size_memory_vector, num_write_heads)
+        write_strengths: tf.Tensor
+            shape: (batch_size, num_write_heads)
+        write_gates: tf.Tensor
+            shape: (batch_size, num_write_heads)
+        write_shift_weightings: tf.Tensor
+            shape: (batch_size, 2 * size_conv_shift + 1, num_write_heads)
+        write_gammas: tf.Tensor
+            shape: (batch_size, num_write_heads)
+        add_vector: tf.Tensor
+            shape: (batch_size, size_memory_vector)
+        erase_vector: tf.Tensor
+            shape: (batch_size, size_memory_vector)
+            
+        Returns:
+        --------
+        (updated_write_weightings, updated_memory)
+        
+        updated_write_weightings:
+            shape: (batch_size, num_memory_vectors, num_write_heads)
+        updated_memory: 
+            shape: (batch_size, num_memory_vectors, size_memory_vector)
+        """
+
+        content_addressed_weightings = self.content_addressing(memory, write_keys, write_strengths)
+        gated_weightings = self.interpolation(write_weightings, content_addressed_weightings, write_gates)
+        updated_write_weightings = self.convolutional_shift(gated_weightings, write_shift_weightings, write_gammas)
+        updated_memory = self.update_memory(memory, updated_write_weightings, add_vector, erase_vector)
+        
+        return updated_write_weightings, updated_memory
