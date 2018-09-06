@@ -140,7 +140,7 @@ class Memory:
         expand_add_vector = tf.expand_dims(add_vector, 1)
         expand_erase_vector = tf.expand_dims(erase_vector, 1)
         
-        memory = memory * (1 - tf.matmul(write_weightings, erase_vector)) + \
-                        tf.matmul(write_weightings, add_vector)
+        memory = memory * (1 - tf.matmul(write_weightings, expand_erase_vector)) + \
+                        tf.matmul(write_weightings, expand_add_vector)
         
         return memory
