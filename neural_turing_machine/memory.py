@@ -37,7 +37,7 @@ class Memory:
             shape: (batch_size, num_memory_vectors, size_memory_vector)
             the memory matrix
         read_and_write_key_vectors: tf.Tensor
-            shape: (batch_size, num_read_and_write_heads, size_memory_vector)
+            shape: (batch_size, size_memory_vector, num_read_and_write_heads)
             concatenated read and write key vectors
         read_and_write_strengths: tf.Tensor
             shape: (batch_size, num_read_and_write_heads)
@@ -50,8 +50,7 @@ class Memory:
         """
         normalized_memory = tf.nn.l2_normalize(memory, axis=2)
         
-        transpose_read_and_write_key_vectors = tf.transpose(read_and_write_key_vectors, perm=[0, 2, 1])
-        normalized_read_and_write_key_vectors = tf.nn.l2_normalize(transpose_read_and_write_key_vectors, axis=1)
+        normalized_read_and_write_key_vectors = tf.nn.l2_normalize(read_and_write_key_vectors, axis=1)
         
         conv_matrix = tf.matmul(normalized_memory, normalized_read_and_write_key_vectors)
         
