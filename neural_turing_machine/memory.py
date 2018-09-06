@@ -90,7 +90,7 @@ class Memory:
         return gated_weightings
         
         
-    def convolutional_shift(self, gated_weightings, shift_weightings):
+    def convolutional_shift(self, gated_weightings, shift_weightings, read_and_write_gammas):
         """focussing by location by applying convolutional shift
         
         Parameters:
@@ -99,30 +99,23 @@ class Memory:
             shape: (batch_size, num_memory_vectors, num_read_and_write_heads)
         shift_weightings: tf.Tensor
             shape: (batch_size, 2 * size_conv_shift + 1, num_read_and_write_heads)
+        read_and_write_gammas: tf.Tensor
+            shape: (batch_size, num_read_and_write_heads)
         """
         
-        concatenated_gated_weightings = tf.concat([gated_weightings, gated_weightings, gated_weightings], axis=1)
+        convoluted_weights = tf.zeros_like(gated_weightings)
         
-        #
-        single_channel_weightings = tf.expand_dims(tf.expand_dims(concatenated_gated_weightings, axis=1), axis=-1)
+        size_conv_shift = int(shift_weightings.shape[1])
         
-        # unstacked for getting batch_size number of weightings, 
-        # each of size: (batch_size=1, 2 * size_conv_shift + 1, num_read_and_write_heads, channels=1)
-        unstacked_weightings = tf.unstack(single_channel_weightings, axis=0)
+        for i in range(size_conv_shift):
+            shift_index = size_conv_shift // 2 - i
+            convoluted_weights += tf.manip.roll(gated_weightings, shift=shift_index, axis=1) * shift_weightings[:, i, :]
+                
+        read_and_write_gammas = tf.expand_dims(read_and_write_gammas, axis=1)
         
-        single_channel_kernels = tf.expand_dims(tf.expand_dims(shift_weightings, axis=-1), axis=-1)
-        unstacked_kernels = tf.unstack(single_channel_kernels, axis=0)
+        pow_conv_weights = tf.pow(convoluted_weights, read_and_write_gammas)
         
-        conv_shift_array = []
-        for i in range(self.batch_size):
-            conv = tf.nn.conv2d(input=unstacked_weightings[i],
-                                filter=unstacked_kernels[i],
-                                strides=[1, 1, 1, 1],
-                                padding="SAME"
-                               )
-            conv = tf.squeeze(conv, axis=[0, -1])
-            conv = conv[self.num_memory_vectors: 2 * self.num_memory_vectors]
-            conv_shift_array.append(conv)
-            
-        conv_weights = tf.stack(conv_shift_array, axis=0)
-        return conv_weights
+        sharp_conv_weights = pow_conv_weights / tf.expand_dims(tf.reduce_sum(pow_conv_weights, 1), 1)
+        
+        #return sharp_conv_weights
+        return sharp_conv_weights
