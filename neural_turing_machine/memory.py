@@ -127,7 +127,7 @@ class Memory:
         
         Parameters:
         -----------
-        memory_matrix: tf.Tensor
+        memory: tf.Tensor
             shape: (batch_size, num_memory_vectors, size_memory_vector)
         write_weightings: tf.Tensor
             shape: (batch_size, num_memory_vectors, num_write_heads)
@@ -144,3 +144,21 @@ class Memory:
                         tf.matmul(write_weightings, expand_add_vector)
         
         return memory
+    
+        
+    def update_read_vectors(self, memory, read_weightings):
+        """Updates read vectors according to:
+        r_t = \sum_i w_t(i) * M_t(i)
+        
+        Parameters:
+        -----------
+        memory: tf.Tensor
+            shape: (batch_size, num_memory_vectors, size_memory_vector)
+        read_weightings: tf.Tensor
+            shape: (batch_size, num_memory_vectors, num_read_reads)
+        """
+        transpose_read_weigthings = tf.transpose(read_weightings, perm=[0, 2, 1])
+        read_vectors = tf.matmul(transpose_read_weigthings, memory)
+        transpose_read_vectors = tf.transpose(read_vectors, perm=[0, 2, 1])
+        
+        return transpose_read_vectors
