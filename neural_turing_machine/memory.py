@@ -261,3 +261,20 @@ class Memory:
         updated_memory = self.update_memory(memory, updated_write_weightings, add_vector, erase_vector)
         
         return updated_write_weightings, updated_memory
+
+
+    def initialize(self):
+        """Initialize the memory matrix
+        """
+        
+        memory_matrix = (
+            tf.truncated_normal(shape=[self.batch_size, self.num_memory_vectors, self.size_memory_vector],
+                                mean=0.5,
+                                stddev=0.1),
+            tf.random_normal(shape=[self.batch_size, self.num_memory_vectors, self.num_write_heads]),
+            tf.truncated_normal(shape=[self.batch_size, self.num_memory_vectors, self.num_read_heads],
+                                mean=0.5,
+                                stddev=0.1),
+            tf.random_normal(shape=[self.batch_size, self.size_memory_vector, self.num_read_heads])
+        )
+        return memory_matrix
