@@ -261,10 +261,22 @@ class Memory:
         updated_memory = self.update_memory(memory, updated_write_weightings, add_vector, erase_vector)
         
         return updated_write_weightings, updated_memory
-
-
+    
+    
     def initialize(self):
         """Initialize the memory matrix
+        
+        Returns:
+        --------
+        4-tuple
+        memory_matrix[0]: actual memory matrix
+            shape: (batch_size, num_memory_vectors, size_memory_vector)
+        memory_matrix[1]: write_weightings
+            shape: (batch_size, num_memory_vectors, num_write_heads)
+        memory_matrix[2]: read_weightings
+            shape: (batch_size, num_memory_vectors, num_read_heads)
+        memory_matrix[3]: last_read_vector
+            shape: (batch_size, size_memory_vector, num_read_heads)
         """
         
         memory_matrix = (
