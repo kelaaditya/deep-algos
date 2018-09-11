@@ -137,7 +137,7 @@ class Controller(abc.ABC):
         
         # similar shapes and wrapping for the write head 
         parsed['write_keys'] = tf.reshape(interface_vector[:, read_conv_shift_vector:write_key_vector], shape_write_key_vector)
-        parsed['write_strengths'] = tf.nn.softplus(tf.reshape(interface_vector[:, write_key_vector:write_key_strength], shape_read_key_strength))
+        parsed['write_strengths'] = tf.nn.softplus(tf.reshape(interface_vector[:, write_key_vector:write_key_strength], shape_write_key_strength))
         parsed['write_gates'] = tf.nn.sigmoid(tf.reshape(interface_vector[:, write_key_strength:write_interpolation_gate], shape_write_interpolation_gate))
         parsed['write_gammas'] = 1 + tf.nn.softplus(tf.reshape(interface_vector[:, write_interpolation_gate: write_gamma], shape_write_gamma))
         parsed['write_shifts'] = tf.nn.softmax(tf.reshape(interface_vector[:, write_gamma:write_conv_shift_vector], shape_write_conv_shift_vector))
