@@ -12,6 +12,7 @@ class NTM:
     def __init__(self,
                  controller,  # either 'lstm' or 'feedforward'
                  size_input,
+                 size_input_sequence,
                  size_output,
                  num_memory_vectors=256,
                  size_memory_vector=64,
@@ -27,6 +28,7 @@ class NTM:
         
         
         self.size_input = size_input
+        self.size_input_sequence = size_input_sequence
         self.size_output = size_output
         self.num_memory_vectors = num_memory_vectors
         self.size_memory_vector = size_memory_vector
@@ -62,6 +64,11 @@ class NTM:
                              self.num_write_heads,
                              self.batch_size
                             )
+        
+        # builds graph and concatenates all the pre-outputs
+        # from the sequence of inputs into a tensor of shape
+        # (batch_size, size_output * size_sequence)
+        self.build_graph()
         
         
     def operation(self, input_data, memory_state, controller_state=None):
@@ -125,6 +132,5 @@ class NTM:
         return [
             updated_memory_state,
             pre_output,
-            parsed_interface_vector,
-            network_state if controller_state else -1
+            network_state if controller_state else None
         ]
