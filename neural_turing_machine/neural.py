@@ -134,3 +134,56 @@ class NTM:
             pre_output,
             network_state if controller_state else None
         ]
+    
+    
+    def generate_output(self, input_sequential_data):
+        """Generates output
+        
+        Parameters:
+        -----------
+        input_sequential_data: tf.Tensor
+            shape: (batch_size, sequence_length, size_input)
+        """
+        
+        # initialize the memory state
+        memory_state = self.memory.initialize()
+        
+        # initialize the controller state
+        if self.controller_network == 'lstm':
+            controller_state = self.controller.init_state
+        elif self.controller_network == 'feedforward':
+            controller_state = None
+        
+        # input_sequential_data has shape: 
+        # (batch_size, sequence_length, size_input)
+        # creates a list of len = sequence_length of
+        # shape (batch_size, size_input) vectors
+        unstack_input_sequential_data = tf.unstack(input_sequential_data, axis=1)
+        
+        output_list = []
+        for input_data in unstack_input_sequential_data:
+            operation_list = self.operation(input_data, memory_state, controller_state)
+            
+            memory_state            = operation_list[0]
+            controller_state        = operation_list[2]
+            pre_output              = operation_list[1]
+            
+            output_list.append(pre_output)
+            
+        concat_pre_output = tf.concat(output_list, axis=1)
+            
+        return concat_pre_output
+    
+    
+    def build_graph(self):
+        """Builds the NTM graph
+        """
+        
+        self.input_sequential_data = tf.placeholder(dtype=tf.float32,
+                                                    shape=[self.batch_size, self.size_input_sequence, self.size_input],
+                                                    name='sequential_input')
+        self.target_output = tf.placeholder(dtype=tf.float32,
+                                            shape=[self.batch_size, self.size_input_sequence, self.size_input],
+                                            name='target_output')
+        
+        self.pre_output = self.generate_output(self.input_sequential_data)
