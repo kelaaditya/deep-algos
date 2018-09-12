@@ -19,18 +19,28 @@ class LSTMController(Controller):
         self.init_hidden_state = tf.zeros(shape=[self.batch_size, self.size_lstm_units])
         self.init_state = tf.contrib.rnn.LSTMStateTuple(self.init_cell_state, self.init_hidden_state)
 
-    
+            
     def variables_for_network_output(self):
         """Defines the initial weights for the controller
         """
         
+        # lambda for std dev bounding
+        self.std_dev = lambda length: np.min([1e-2, np.sqrt(2.0 / length)])
+
+
         with tf.variable_scope('controller_network_weights', reuse=tf.AUTO_REUSE):
             self.interface_weights = tf.get_variable('interface_weights',
-                                                     shape=[self.size_network_output, self.size_interface_vector],
-                                                     initializer=tf.random_normal_initializer())
+                                                     initializer=tf.truncated_normal(
+                                                         shape=[self.size_network_output, self.size_interface_vector],
+                                                         stddev=self.std_dev(self.size_network_output)
+                                                     )
+                                                    )
             self.network_output_weights = tf.get_variable('network_output_weights',
-                                                          shape=[self.size_network_output, self.size_output],
-                                                          initializer=tf.random_normal_initializer())
+                                                          initializer=tf.truncated_normal(
+                                                              shape=[self.size_network_output, self.size_output],
+                                                              stddev=self.std_dev(self.size_network_output)
+                                                          )
+                                                         )
             
             
     def network_operation(self, concatenated_input_vector, state):
@@ -47,7 +57,7 @@ class LSTMController(Controller):
         
         Parameters:
         -----------
-        input_data: tf.Tensor (self.batch_size, self.size_input_data)
+        input_data: tf.Tensor (self.batch_size, self.size_input)
         
         last_read_vectors: tf.Tensor (self.batch_size, self.size_memory_vector, self.num_read_heads)
             The last read vectors from memory
