@@ -6,33 +6,46 @@ from controller import Controller
 
 class FeedForwardController(Controller):
     
+    
     def variables_for_network(self):
         """Defines the variables of the neural network model
         inside the controller
         """
-        
+        # lambda for std dev bounding
+        self.std_dev = lambda length: np.min([1e-2, np.sqrt(2.0 / length)])
+
         self.size_network_output = 100
-        
+
         with tf.variable_scope('controller_network_variables', reuse=tf.AUTO_REUSE):
-            self.W = tf.get_variable('W', shape=[self.size_concatenated_input,
-                                                 self.size_network_output],
-                                                 initializer=tf.random_normal_initializer())
+            self.W = tf.get_variable('W',
+                                     initializer=tf.truncated_normal(
+                                         shape=[self.size_concatenated_input, self.size_network_output],
+                                         stddev=self.std_dev(self.size_concatenated_input)
+                                     )
+                                    )
             self.b = tf.get_variable('b',
                                      shape=[self.size_network_output],
-                                     initializer=tf.zeros_initializer())
+                                     initializer=tf.zeros_initializer()
+                                    )
             
     
     def variables_for_network_output(self):
         """Defines the initial weights for the controller
         """
-        
+
         with tf.variable_scope('controller_network_weights', reuse=tf.AUTO_REUSE):
             self.interface_weights = tf.get_variable('interface_weights',
-                                                     shape=[self.size_network_output, self.size_interface_vector],
-                                                     initializer=tf.random_normal_initializer())
+                                                     initializer=tf.truncated_normal(
+                                                         shape=[self.size_network_output, self.size_interface_vector],
+                                                         stddev=self.std_dev(self.size_network_output)
+                                                     )
+                                                    )
             self.network_output_weights = tf.get_variable('network_output_weights',
-                                                          shape=[self.size_network_output, self.size_output],
-                                                          initializer=tf.random_normal_initializer())
+                                                          initializer=tf.truncated_normal(
+                                                              shape=[self.size_network_output, self.size_output],
+                                                              stddev=self.std_dev(self.size_network_output)
+                                                          )
+                                                         )
             
             
     def network_operation(self, concatenated_input_vector):
@@ -68,3 +81,4 @@ class FeedForwardController(Controller):
         parsed_interface_vector = self.parse_interface_vector(interface_vector)
         
         return pre_output, parsed_interface_vector
+        
