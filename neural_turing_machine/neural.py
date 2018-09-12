@@ -154,15 +154,9 @@ class NTM:
         elif self.controller_network == 'feedforward':
             controller_state = None
         
-        # input_sequential_data has shape: 
-        # (batch_size, sequence_length, size_input)
-        # creates a list of len = sequence_length of
-        # shape (batch_size, size_input) vectors
-        unstack_input_sequential_data = tf.unstack(input_sequential_data, axis=1)
-        
         output_list = []
-        for input_data in unstack_input_sequential_data:
-            operation_list = self.operation(input_data, memory_state, controller_state)
+        for index in range(self.size_input_sequence):
+            operation_list = self.operation(input_sequential_data[:, index, :], memory_state, controller_state)
             
             memory_state            = operation_list[0]
             controller_state        = operation_list[2]
@@ -170,9 +164,8 @@ class NTM:
             
             output_list.append(pre_output)
             
-        concat_pre_output = tf.concat(output_list, axis=1)
-            
-        return concat_pre_output
+        output = tf.sigmoid(tf.transpose(output_list, perm=[1, 0, 2]))
+        return output
     
     
     def build_graph(self):
@@ -186,4 +179,4 @@ class NTM:
                                             shape=[self.batch_size, self.size_input_sequence, self.size_input],
                                             name='target_output')
         
-        self.pre_output = self.generate_output(self.input_sequential_data)
+        self.output = self.generate_output(self.input_sequential_data)
