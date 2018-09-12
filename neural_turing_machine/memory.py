@@ -281,12 +281,12 @@ class Memory:
         
         memory_matrix = (
             tf.truncated_normal(shape=[self.batch_size, self.num_memory_vectors, self.size_memory_vector],
-                                mean=0.5,
+                                mean=0.4,
                                 stddev=0.1),
-            tf.random_normal(shape=[self.batch_size, self.num_memory_vectors, self.num_write_heads]),
+            tf.fill(dims=[self.batch_size, self.num_memory_vectors, self.num_write_heads], value=1e-6),
             tf.truncated_normal(shape=[self.batch_size, self.num_memory_vectors, self.num_read_heads],
-                                mean=0.5,
+                                mean=0.4,
                                 stddev=0.1),
-            tf.random_normal(shape=[self.batch_size, self.size_memory_vector, self.num_read_heads])
+            tf.fill(dims=[self.batch_size, self.size_memory_vector, self.num_read_heads], value=1e-6)
         )
         return memory_matrix
