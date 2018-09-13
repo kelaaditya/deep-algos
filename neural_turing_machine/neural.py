@@ -165,7 +165,7 @@ class NTM:
             output_list.append(pre_output)
             
         output = tf.sigmoid(tf.transpose(output_list, perm=[1, 0, 2]))
-        return output
+        return output, memory_state[0]
     
     
     def build_graph(self):
@@ -179,4 +179,4 @@ class NTM:
                                             shape=[self.batch_size, self.size_input_sequence, self.size_input],
                                             name='target_output')
         
-        self.output = self.generate_output(self.input_sequential_data)
+        self.output, self.memory_tensor = self.generate_output(self.input_sequential_data)
