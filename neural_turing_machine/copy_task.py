@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 import tensorflow as tf
 
 from feedforward_controller import FeedForwardController
@@ -38,7 +39,7 @@ def train(model='lstm', # or 'feedforward'
           momentum=0.9,
           decay=0.95,
           iterations=100000,
-          save_location='./checkpoints/ntm/',
+          save_location='./checkpoints/',
           restore_training=False):
     
     tf.reset_default_graph()
@@ -59,6 +60,7 @@ def train(model='lstm', # or 'feedforward'
     # and has shape: (batch_size, size_input_sequence, size_input)
     ntm_output = ntm.output
 
+    # loss function
     eps = 1e-8
     loss = -1 * tf.reduce_mean(
         ntm.target_output * tf.log(ntm.output + eps) + (1 - ntm.target_output) * tf.log(1 - ntm.output + eps)
@@ -72,6 +74,10 @@ def train(model='lstm', # or 'feedforward'
         train_op = optimizer.apply_gradients(capped_gvs)
 
     with tf.Session() as sess:
+        
+        # check if restore training
+        # if True, restore checkpoints
+        # and train over the restored
         if restore_training:
             saver = tf.train.Saver()
             ckpt = tf.train.get_checkpoint_state(save_location)
@@ -82,20 +88,24 @@ def train(model='lstm', # or 'feedforward'
             sess.run(tf.global_variables_initializer())
 
         loss_list = []
+        memory_tensor_list = []
+        
         for iteration in range(iterations):
             input_data, target_output_data = generate_data(batch_size, size_input_sequence, size_input)
-            current_loss, _ = sess.run([loss, train_op], feed_dict={ntm.input_sequential_data: input_data, ntm.target_output: target_output_data})
-
-            loss_list.append(current_loss)
             
-            if iteration % 100 == 0:
+            current_loss, _, memory_tensor = sess.run([loss, train_op, ntm.memory_tensor], feed_dict={ntm.input_sequential_data: input_data, ntm.target_output: target_output_data})
+            
+            loss_list.append(current_loss)
+            memory_tensor_list.append(memory_tensor)
+            
+            if iteration % 1000 == 0:
                 saver.save(sess, save_location + model, global_step=iteration)
                 
-    return loss_list
+    return loss_list, memory_tensor_list
 
 
 def test(model='lstm', # or 'feedforward'
-         save_location='./checkpoints/ntm/'):
+         save_location='./checkpoints/'):
     
     tf.reset_default_graph()
     
@@ -119,8 +129,32 @@ def test(model='lstm', # or 'feedforward'
 
         input_data, target_output = generate_data(batch_size, size_input_sequence, size_input)
         
-        ntm_output = ntm.generate_output(ntm.input_sequential_data)
+        ntm_output, memory_tensor = ntm.generate_output(ntm.input_sequential_data)
+                
+        ntm_output, memory_tensor = sess.run([ntm_output, memory_tensor], feed_dict={ntm.input_sequential_data: input_data})
         
-        ntm_output = sess.run(ntm_output, feed_dict={ntm.input_sequential_data: input_data})
-        
-    return ntm_output, target_output
+    return ntm_output, target_output, memory_tensor
+
+
+
+if __name__ == "__main__":
+
+    size_input = 10
+    size_input_sequence = 10
+    size_output = 10
+    num_memory_vectors = 128
+    size_memory_vector = 64
+    num_read_heads = 1
+    num_write_heads = 1
+    size_conv_shift = 1
+    batch_size = 1
+
+    loss_list, memory_tensor_list = train(iterations=100000, restore_training=False)
+
+    plt.plot(loss_list)
+    plt.xlabel('iterations')
+    plt.title('Training Loss')
+    plt.savefig('training_loss.png')
+    print(loss_list)
+
+    # _, _, _ = test()
