@@ -156,5 +156,3 @@ if __name__ == "__main__":
     plt.title('Training Loss')
     plt.savefig('training_loss.png')
     print(loss_list)
-
-    # _, _, _ = test()
