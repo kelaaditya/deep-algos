@@ -92,3 +92,35 @@ def train(model='lstm', # or 'feedforward'
                 saver.save(sess, save_location + model, global_step=iteration)
                 
     return loss_list
+
+
+def test(model='lstm', # or 'feedforward'
+         save_location='./checkpoints/ntm/'):
+    
+    tf.reset_default_graph()
+    
+    ntm = NTM(model,
+              size_input,
+              size_input_sequence,
+              size_output,
+              num_memory_vectors,
+              size_memory_vector,
+              num_read_heads,
+              num_write_heads,
+              size_conv_shift,
+              batch_size
+             )
+    
+    saver = tf.train.Saver()
+    ckpt = tf.train.get_checkpoint_state(save_location)
+    
+    with tf.Session() as sess:
+        saver.restore(sess, ckpt.model_checkpoint_path)
+
+        input_data, target_output = generate_data(batch_size, size_input_sequence, size_input)
+        
+        ntm_output = ntm.generate_output(ntm.input_sequential_data)
+        
+        ntm_output = sess.run(ntm_output, feed_dict={ntm.input_sequential_data: input_data})
+        
+    return ntm_output, target_output
