@@ -1,6 +1,6 @@
 ## Neural Turing Machine
 
-A TensorFlow implementaion of a basic [Neural Turing Machine](https://arxiv.org/abs/1410.5401).  
+A basic TensorFlow implementation of a [Neural Turing Machine](https://arxiv.org/abs/1410.5401).  
 The code is heavily based on the implementation by [carpedm20](https://github.com/carpedm20/NTM-tensorflow) and [camigord](https://github.com/camigord/Neural-Turing-Machine).
 
 
@@ -52,7 +52,16 @@ python copy_task.py [-h] [--mode MODE] [--model MODEL]
 | batch_size             | `<Int>`                  | batch size |
 
 #### Results
-The network was trained with the LSTM controller for `iterations=100000`
+The network was trained with the LSTM controller for `iterations=100000`.  
+The sequence length for training was 10.
+  
+The training loss as a function of iterations is as follows:  
+![training loss](https://github.com/kelaaditya/machine-learning-algorithms/blob/master/neural_turing_machine/data/training_loss.png)
+
+
+The copy task was tested with input data (with the starting and ending delimiters):  
+![input data](https://github.com/kelaaditya/machine-learning-algorithms/blob/master/neural_turing_machine/data/input_data.png)
+
 
 
 
