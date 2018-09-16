@@ -53,6 +53,7 @@ python copy_task.py [-h] [--mode MODE] [--model MODEL]
 
 #### Results
 The network was trained with the LSTM controller for `iterations=100000`.  
+The number of reading heads and the number of write heads were both 1. (The code currently only works for `num_write_heads=1`)  
 The sequence length for training was 10.
   
 The training loss as a function of iterations is as follows:  
@@ -61,6 +62,11 @@ The training loss as a function of iterations is as follows:
 
 The copy task was tested with input data (with the starting and ending delimiters):  
 ![input data](https://github.com/kelaaditya/machine-learning-algorithms/blob/master/neural_turing_machine/data/input_data.png)
+
+The output from the NTM was:  
+![output data](https://github.com/kelaaditya/machine-learning-algorithms/blob/master/neural_turing_machine/data/ntm_output.png)
+
+
 
 
 
