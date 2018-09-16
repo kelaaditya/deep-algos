@@ -1,3 +1,2 @@
-# ignore data + checkpoints
-data/
+# ignore checkpoints
 checkpoints/
