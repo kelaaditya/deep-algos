@@ -29,7 +29,8 @@ def generate_data(batch_size, size_input_sequence, size_input):
     
     return input_sequential_data, target_output
 
-
+# TODO: instead of having many arguments to function
+# pass 'args' instead and unpack args later inside
 def train(model, # 'lstm' or 'feedforward'
           learning_rate,
           momentum,
