@@ -2,6 +2,8 @@ hickle
 matplotlib
 numpy
 Pillow
+requests
 scipy
 scikit-image
 tensorflow
+tqdm
