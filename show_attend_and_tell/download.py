@@ -40,17 +40,20 @@ def download(URL):
         block_size = 32 * 1024
 
         with open(file_name, 'wb') as data_file:
-            with tqdm(total = file_size / block_size, unit='B', unit_scale=True, unit_divisor=1024) as pbar:
+            with tqdm(total=file_size, unit='B', unit_scale=True, unit_divisor=1024) as pbar:
                 for chunk in response.iter_content(chunk_size=block_size):
                     if chunk:
                         data_file.write(chunk)
-                        pbar.update(block_size)
+                        pbar.update(len(chunk))
 
     return file_name
 
 
 if __name__=="__main__":
     try:
+        download(VGG19)
+        download(COCO_TRAIN)
+        download(COCO_VALIDATE)
         download(COCO_ANNOTATE)
     except requests.exceptions.ConnectionError as ce:
         print(ce)
