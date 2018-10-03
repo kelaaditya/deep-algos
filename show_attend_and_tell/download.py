@@ -25,7 +25,8 @@ file_names = {
     #####################
 
 def download(URL):
-    download_location = 'data/'
+    base_folder = os.path.dirname(__file__)
+    download_location = os.path.join(base_folder, 'data')
     file_name = os.path.join(download_location, file_names[URL])
         
     response = requests.get(URL, stream=True)
@@ -52,23 +53,21 @@ def download(URL):
                         pbar.update(len(chunk))
         print(f'{file_names[URL]} downloaded.')
 
-    return file_name, file_size
+    return download_location, file_name, file_size
 
 
     #####################
     #     Unzipping     #
     #####################
 
-def unzip(URL):
-    file_location = 'data/'
-    file_name = os.path.join(file_location, file_names[URL])
+def unzip(URL, download_location, file_name):
 
     with zipfile.ZipFile(file_name, 'r') as zf:
         uncompressed_size = sum(file.file_size for file in zf.infolist())
 
         with tqdm(total=uncompressed_size, unit='B', unit_scale=True, unit_divisor=1024) as pbar:
             for sub_file in zf.infolist():
-                zf.extract(sub_file, )
+                zf.extract(sub_file, download_location)
                 pbar.update(sub_file.file_size)
 
     print(f'{file_names[URL]} has been extracted.')
@@ -79,12 +78,11 @@ def unzip(URL):
     ######################
 
 def download_and_unzip(URL):
-    file_name, file_size = download(URL)
+    download_location, file_name, file_size = download(URL)
 
     if not os.path.exists(file_name) or not os.stat(file_name).st_size == file_size:
         raise ValueError(f'{file_names[URL]} download was incomplete. Cannot proceed with unzip.')
-
-    unzip(URL)
+    unzip(URL, download_location, file_name)
 
 
 if __name__=="__main__":
