@@ -42,7 +42,6 @@ def download(URL):
     else:
         print(f'Downloading {file_names[URL]}')
 
-        count = 0
         block_size = 32 * 1024
 
         with open(file_name, 'wb') as data_file:
